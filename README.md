@@ -6,12 +6,6 @@
 
 </div>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/rust-1.78.0-orange.svg" alt="Rust Version">
-  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
-  <img src="https://img.shields.io/badge/platform-cross--platform-lightgrey.svg" alt="Platform">
-</p>
-
 This whole project is basically my way of getting better at Rust by making something useful and fun! With `minigrep-rs`, you can easily search for text inside your files right from the terminal. It's all about clean code and doing one thing really well!
 
 ---
