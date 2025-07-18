@@ -20,9 +20,9 @@ impl Config {
         let mut line_number = false;
 
         for arg in args.iter().skip(3) {
-            if arg == "-ic" || arg == "--ignore-case" {
+            if (arg == "-ic" || arg == "--ignore-case") && !ignore_case {
                 ignore_case = true;
-            } else if arg == "-ln" || arg == "--line-number" {
+            } else if arg == "-ln" || arg == "--line-number" && !line_number {
                 line_number = true;
             } else {
                 return Err("Invalid flags provided");
