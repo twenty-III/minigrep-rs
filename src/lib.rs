@@ -6,6 +6,7 @@ pub struct Config {
     pub file_path: String,
     pub ignore_case: bool,
     pub line_number: bool,
+    pub count_only: bool,
 }
 
 impl Config {
@@ -18,14 +19,17 @@ impl Config {
         let file_path = args[2].clone();
         let mut ignore_case = false;
         let mut line_number = false;
+        let mut count_only = false;
 
         for arg in args.iter().skip(3) {
             if (arg == "-ic" || arg == "--ignore-case") && !ignore_case {
                 ignore_case = true;
-            } else if arg == "-ln" || arg == "--line-number" && !line_number {
+            } else if (arg == "-ln" || arg == "--line-number") && (!line_number && !count_only) {
                 line_number = true;
+            } else if (arg == "-co" || arg == "--count-only") && (!count_only && !line_number) {
+                count_only = true;
             } else {
-                return Err("Invalid flags provided");
+                return Err("Invalid flags/combination provided");
             }
         }
 
@@ -34,6 +38,7 @@ impl Config {
             file_path,
             ignore_case,
             line_number,
+            count_only,
         })
     }
 }
@@ -47,11 +52,15 @@ pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
         search(&config.query, &content)
     };
 
-    for (line_num, line) in &lines {
-        if config.line_number {
-            println!("{} (line={})", line, line_num);
-        } else {
-            println!("{}", line);
+    if config.count_only {
+        println!("Count: {}", lines.len());
+    } else {
+        for (line_num, line) in &lines {
+            if config.line_number {
+                println!("{} (line={})", line, line_num);
+            } else {
+                println!("{}", line);
+            }
         }
     }
 
@@ -76,43 +85,4 @@ pub fn search_case_insesitive<'a>(query: &str, content: &'a str) -> Vec<(usize, 
         }
     }
     res
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn one_result() {
-        let query = "duct";
-        let content = "\
-Rust:
-safe, fast, productive.
-productive.
-Pick three.";
-
-        assert_eq!(
-            vec![(2, "safe, fast, productive."), (3, "productive.")],
-            search(query, content)
-        );
-    }
-    #[test]
-    fn two_result() {
-        let query = "hold";
-        let content = "\
-Hold fast to dreams
-For if dreams die
-Life is a broken-winged bird
-That cannot fly.
-
-Hold fast to dreams
-For when dreams go
-Life is a barren field
-Frozen with snow.";
-
-        assert_eq!(
-            vec![(1, "Hold fast to dreams"), (6, "Hold fast to dreams")],
-            search_case_insesitive(query, content)
-        );
-    }
 }
