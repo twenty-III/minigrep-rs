@@ -5,6 +5,7 @@ pub struct Config {
     pub query: String,
     pub file_path: String,
     pub ignore_case: bool,
+    pub line_number: bool,
 }
 
 impl Config {
@@ -12,26 +13,27 @@ impl Config {
         if args.len() < 3 {
             return Err("Not enough arguments");
         }
-        if args.len() > 4 {
-            return Err("More than needed argumemts");
-        }
 
         let query = args[1].clone();
         let file_path = args[2].clone();
-        let ignore_case = if args.len() == 4 {
-            if args[3] == "--ignore-case" {
-                true
+        let mut ignore_case = false;
+        let mut line_number = false;
+
+        for arg in args.iter().skip(3) {
+            if arg == "-ic" || arg == "--ignore-case" {
+                ignore_case = true;
+            } else if arg == "-ln" || arg == "--line-number" {
+                line_number = true;
             } else {
-                return Err("Unknown flag");
+                return Err("Invalid flags provided");
             }
-        } else {
-            false
-        };
+        }
 
         Ok(Config {
             query,
             file_path,
             ignore_case,
+            line_number,
         })
     }
 }
@@ -46,7 +48,11 @@ pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     };
 
     for (line_num, line) in &lines {
-        println!("{} (line={})", line, line_num);
+        if config.line_number {
+            println!("{} (line={})", line, line_num);
+        } else {
+            println!("{}", line);
+        }
     }
 
     Ok(())
@@ -92,15 +98,20 @@ Pick three.";
     }
     #[test]
     fn two_result() {
-        let query = "dUcT";
+        let query = "hold";
         let content = "\
-Rust:
-safe, fast, productive.
-productive.
-Pick three.";
+Hold fast to dreams
+For if dreams die
+Life is a broken-winged bird
+That cannot fly.
+
+Hold fast to dreams
+For when dreams go
+Life is a barren field
+Frozen with snow.";
 
         assert_eq!(
-            vec![(2, "safe, fast, productive."), (3, "productive.")],
+            vec![(1, "Hold fast to dreams"), (6, "Hold fast to dreams")],
             search_case_insesitive(query, content)
         );
     }
